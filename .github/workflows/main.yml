@@ -23,7 +23,7 @@ jobs:
       uses: actions/setup_python@v4
       with:
         python-version: 3.9
-        cache: 'pip' # caching pip dependencies
+        cache: pip # caching pip dependencies
     -
       name: Install dependencies
       run: |
