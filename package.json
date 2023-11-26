@@ -1,0 +1,23 @@
+{
+  "name": "bolt-lambdas",
+  "version": "1.0.0",
+  "description": "repository used to store and handle the lambdas functions associated witht the Bolt project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sorman04/bolt-lambdas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sorman04/bolt-lambdas/issues"
+  },
+  "homepage": "https://github.com/sorman04/bolt-lambdas#readme",
+  "devDependencies": {
+    "serverless-python-requirements": "^6.0.1"
+  }
+}
