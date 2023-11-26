@@ -25,3 +25,15 @@ functions:
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
+  anotherLambda:
+    name: hello-lambda
+    handler: bolt_check.handler
+    description: another lambda to showcase the deployment of two functions
+    timeout: 5
+    memorySize: 128
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
