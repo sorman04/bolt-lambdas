@@ -69,6 +69,7 @@ def handler(event, context):
             len(key.split("/")) == 3
             and key.split("/")[1] == "input"
             and key.split("/")[2] != ""
+            and key != "purchasing-orders/input/dict_suppliers.xlsx"
         ):
             s3c.delete_object(Bucket=bucket_name, Key=key)
 
