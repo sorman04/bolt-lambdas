@@ -19,6 +19,9 @@ functions:
   StartStop:
     name: Bolt-PO-StartStopEC2
     handler: bolt_startstop.handler
+    environment:
+      AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
     module: start_stop_ec2
     description: Bolt-PO lambda function to start or stop the associated EC2 machines
     timeout: 120 # in seconds, max allowed time to run

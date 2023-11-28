@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/sorman04/bolt-lambdas#readme",
   "devDependencies": {
+    "serverless-dotenv-plugin": "^6.0.0",
     "serverless-python-requirements": "^6.0.1"
   }
 }

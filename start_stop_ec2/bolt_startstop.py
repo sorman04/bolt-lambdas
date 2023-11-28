@@ -16,8 +16,11 @@
 """
 
 import os
+from dotenv import load_dotenv
 import json
 import boto3
+
+load_dotenv()
 
 """# get AWS Secrets Manager
 secret_name = "AWS_LambdaKeys"
