@@ -41,7 +41,7 @@ def get_instance_ids(instance_names):
     return instance_ids
 
 
-def lambda_handler(event, context):
+def handler(event, context):
     instance_names = event["instances"].split(",")
     action = event["action"]
 
