@@ -45,7 +45,9 @@ jobs:
         cache: 'npm'
     -
       name: Install Node.js dependencies (we are looking for serverless-python-requirements)
-      run: npm install
+      run: |
+        npm install
+        npm i -D serverless-dotenv-plugin
     -
       name: Deploy Serverless with Python Requirements
       uses: dhollerbach/actions.serverless-with-python-requirements@v2
