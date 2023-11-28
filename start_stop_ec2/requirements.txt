@@ -1,2 +1,1 @@
 boto3==1.26.151
-python-dotenv==0.21.0

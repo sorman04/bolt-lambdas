@@ -2,7 +2,6 @@ import io
 import json
 import pandas as pd
 import boto3
-from datetime import datetime
 
 
 def handler(event, context):
@@ -45,8 +44,7 @@ def handler(event, context):
 
     # save to S3
     df.to_excel(excel_buffer)
-
-    response = s3.put_object(
+    s3.put_object(
         Body=excel_buffer.getvalue(),
         Bucket=bucket_name,
         Key=target_file,

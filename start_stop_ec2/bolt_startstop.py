@@ -15,12 +15,8 @@
 
 """
 
-import os
-from dotenv import load_dotenv
 import json
 import boto3
-
-# load_dotenv()
 
 # get AWS Secrets Manager
 secret_name = "AWS_LambdaKeys"
@@ -34,11 +30,6 @@ secrets_json = json.loads(secrets)
 
 AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
 AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
-
-"""AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")"""
-
-print(AWS_ACCESS_KEY_ID)
 
 region = "eu-central-1"
 ec2 = boto3.client(
@@ -74,9 +65,9 @@ def handler(event, context):
 
     if action == "Start":
         ec2.start_instances(InstanceIds=instance_ids)
-        response = "Successfully started instances: " + str(instance_ids)
     elif action == "Stop":
         ec2.stop_instances(InstanceIds=instance_ids)
-        response = "Successfully stopped instances: " + str(instance_ids)
 
-    return {"statusCode": 200, "body": json.dumps(response)}
+    return {
+        "function_name": "Bolt-PO-StartStopEC2",
+    }
