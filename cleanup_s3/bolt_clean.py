@@ -14,6 +14,7 @@ def handler(event, context):
     get_secrets = client.get_secret_value(SecretId=secret_name)
     secrets = get_secrets["SecretString"]
     secrets_json = json.loads(secrets)
+
     AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
     AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
 
