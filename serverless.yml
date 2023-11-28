@@ -7,6 +7,12 @@ provider:
   runtime: python3.9
   stage: dev
   region: eu-north-1
+  iamRoleStatements:
+    - 
+      Effect: Allow
+      Action: secretsmanager:GetSecretValue
+      Resource: "*"
+
 
 plugins:
   - serverless-python-requirements  # we use node to install the dependency called serverless-python...

@@ -22,7 +22,7 @@ import boto3
 
 # load_dotenv()
 
-"""# get AWS Secrets Manager
+# get AWS Secrets Manager
 secret_name = "AWS_LambdaKeys"
 region_name = "eu-north-1"
 session = boto3.session.Session()
@@ -33,10 +33,10 @@ secrets = get_secrets["SecretString"]
 secrets_json = json.loads(secrets)
 
 AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
-AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]"""
+AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+"""AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")"""
 
 print(AWS_ACCESS_KEY_ID)
 
