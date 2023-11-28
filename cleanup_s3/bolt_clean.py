@@ -7,7 +7,7 @@ from datetime import datetime
 def handler(event, context):
     # get AWS Secrets Manager
     secret_name = "AWS_LambdaKeys"
-    region_name = "eu-central-1"
+    region_name = "eu-north-1"
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
     # call secrets
