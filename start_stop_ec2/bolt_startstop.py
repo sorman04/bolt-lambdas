@@ -20,19 +20,25 @@ import json
 import boto3
 
 # get AWS Secrets Manager
-secret_name = "AWS_AccessKeys"
-region_name = "eu-north-1"
+secret_name = "AWS_LambdaKeys"
+region_name = "eu-central-1"
 session = boto3.session.Session()
 client = session.client(service_name="secretsmanager", region_name=region_name)
 # call secrets
 get_secrets = client.get_secret_value(SecretId=secret_name)
 secrets = get_secrets["SecretString"]
 secrets_json = json.loads(secrets)
+
 AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
 AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
 
 region = "eu-central-1"
-ec2 = boto3.client("ec2", region_name=region)
+ec2 = boto3.client(
+    "ec2",
+    region_name=region,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+)
 
 
 def get_instance_ids(instance_names):
