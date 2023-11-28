@@ -35,6 +35,8 @@ AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]"""
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
+print(AWS_ACCESS_KEY_ID)
+
 region = "eu-central-1"
 ec2 = boto3.client(
     "ec2",
