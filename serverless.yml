@@ -1,5 +1,7 @@
 service: serverless-lambda-python
 
+#useDotenv: true
+
 provider:
   name: aws
   runtime: python3.9
@@ -8,6 +10,7 @@ provider:
 
 plugins:
   - serverless-python-requirements  # we use node to install the dependency called serverless-python...
+  - serverless-dotenv-plugin # rrquested in order to use env variables
 
 package: 
   individually: true  # include only specified files in the lambda package
