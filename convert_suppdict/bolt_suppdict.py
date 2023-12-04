@@ -19,7 +19,7 @@ def handler(event, context):
     AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
     AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
 
-    source_file = "purchasing-orders/input/MapareFurnizori_Cadentar-WMS.xlsx"
+    source_file = "purchasing-orders/input/MapareFurnizori_Cadentar_WMS.xlsx"
     target_file = "purchasing-orders/input/dict_suppliers.xlsx"
 
     s3 = boto3.client(
