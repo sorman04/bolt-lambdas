@@ -58,8 +58,11 @@ def get_instance_ids(instance_names):
 
 
 def handler(event, context):
-    instance_names = event["instances"].split(",")
-    action = event["action"]
+    """instance_names = event["instances"].split(",")
+    action = event["action"]"""
+
+    instance_names = event[list(event)[-1]]["EC2_fc_instance"].split(",")
+    action = event[list(event)[-1]]["EC2_fc_action"]
 
     instance_ids = get_instance_ids(instance_names)
 
