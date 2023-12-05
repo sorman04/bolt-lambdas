@@ -17,6 +17,7 @@
 
 import json
 import boto3
+from time import sleep
 
 # get AWS Secrets Manager
 secret_name = "AWS_LambdaKeys"
@@ -30,6 +31,8 @@ secrets_json = json.loads(secrets)
 
 AWS_ACCESS_KEY_ID = secrets_json["Access_key_ID"]
 AWS_SECRET_ACCESS_KEY = secrets_json["Secret_Access_key"]
+
+WAIT_TIME = 10
 
 region = "eu-central-1"
 ec2 = boto3.client(
@@ -68,6 +71,25 @@ def handler(event, context):
 
     if action == "Start":
         ec2.start_instances(InstanceIds=instance_ids)
+        # check if machines are running
+        for instance in instance_ids:
+            for i in range(10):
+                sleep(12)
+                response = ec2.describe_instance_status(
+                    InstanceIds=[
+                        instance,
+                    ],
+                )
+                try:
+                    if response["InstanceStatuses"][0]["InstanceState"]["Code"] == 16:
+                        break
+                except:
+                    if i == 9:
+                        return {
+                            "function_name": "Bolt-PO-StartStopEC2",
+                            "instance_id": instance,
+                            "message": "start failed in 120 s. Abort",
+                        }
     elif action == "Stop":
         ec2.stop_instances(InstanceIds=instance_ids)
 
