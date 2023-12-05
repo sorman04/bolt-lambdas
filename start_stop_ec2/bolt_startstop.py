@@ -87,12 +87,12 @@ def handler(event, context):
                     if i == 9:
                         return {
                             "function_name": "Bolt-PO-StartStopEC2",
-                            "instance_id": instance,
-                            "message": "start failed in 120 s. Abort",
+                            "success": False,
                         }
     elif action == "Stop":
         ec2.stop_instances(InstanceIds=instance_ids)
 
     return {
         "function_name": "Bolt-PO-StartStopEC2",
+        "success": True,
     }
