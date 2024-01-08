@@ -20,15 +20,26 @@ def handler(event, context):
 
     # add runtime date to Bulk and MailBag files
     today = datetime.now()
-    today = today.strftime("%d-%m-%Y")
+    today = today.strftime("%d-%m-%YT%H:%M")
 
     bucket_name = "bolt-projects"
+    input_files = [
+        "purchasing-orders/zip-archive/BulkPO.zip",
+        "purchasing-orders/zip-archive/MailBag.csv",
+        "purchasing-orders/input/cadentar.xlsx",
+        "purchasing-orders/input/emails.xlsx",
+        "purchasing-orders/input/MapareFurnizori_Cadentar_WMS.xlsx",
+    ]
 
-    key_bulk = "purchasing-orders/zip-archive/BulkPO.zip"
-    key_bag = "purchasing-orders/zip-archive/MailBag.csv"
-
-    new_bulk = key_bulk.split(".")[0] + f"({today})" + ".zip"
-    new_bag = key_bag.split(".")[0] + f"({today})" + ".csv"
+    files = [
+        [
+            file,
+            file.split(".")[0].replace("input", "zip-archive")
+            + f"({today})."
+            + file.split(".")[1],
+        ]
+        for file in input_files
+    ]
 
     s3c = boto3.client(
         "s3",
@@ -36,42 +47,19 @@ def handler(event, context):
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
 
-    # 1. Change Bulk PO.zip
-    obj = s3c.get_object(Bucket=bucket_name, Key=key_bulk)
-    body = io.BytesIO(obj["Body"].read())
-    s3c.put_object(
-        Body=body.getvalue(),
-        Bucket=bucket_name,
-        Key=new_bulk,
-    )
-    s3c.delete_object(Bucket=bucket_name, Key=key_bulk)
-
-    # 2. Change MailBag.csv
-    obj = s3c.get_object(Bucket=bucket_name, Key=key_bag)
-    body = io.BytesIO(obj["Body"].read())
-    s3c.put_object(
-        Body=body.getvalue(),
-        Bucket=bucket_name,
-        Key=new_bag,
-    )
-    s3c.delete_object(Bucket=bucket_name, Key=key_bag)
-
-    # delete input files
-    s3r = boto3.resource(
-        "s3",
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    )
-
-    bucket = s3r.Bucket(bucket_name)
-    for obj in bucket.objects.all():
-        key = obj.key
-        if (
-            len(key.split("/")) == 3
-            and key.split("/")[1] == "input"
-            and key.split("/")[2] != ""
-        ):
-            s3c.delete_object(Bucket=bucket_name, Key=key)
+    # Change files names,save the files to archive
+    for file in files:
+        try:
+            obj = s3c.get_object(Bucket=bucket_name, Key=file[0])
+            body = io.BytesIO(obj["Body"].read())
+        except:
+            continue
+        s3c.put_object(
+            Body=body.getvalue(),
+            Bucket=bucket_name,
+            Key=file[1],
+        )
+        s3c.delete_object(Bucket=bucket_name, Key=file[0])
 
     return {
         "function_name": "Bolt-PO-CleanUp",
