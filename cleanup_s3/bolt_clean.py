@@ -23,6 +23,7 @@ def handler(event, context):
     today = today.strftime("%d-%m-%YT%H:%M")
 
     bucket_name = "bolt-projects"
+
     input_files = [
         "purchasing-orders/zip-archive/BulkPO.zip",
         "purchasing-orders/zip-archive/MailBag.csv",
@@ -47,20 +48,41 @@ def handler(event, context):
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
 
-    # Change files names,save the files to archive
+    # Change files names, save the files to archive folder and delete it from input
+    failed_files = []
     for file in files:
         try:
             obj = s3c.get_object(Bucket=bucket_name, Key=file[0])
             body = io.BytesIO(obj["Body"].read())
+            s3c.put_object(
+                Body=body.getvalue(),
+                Bucket=bucket_name,
+                Key=file[1],
+            )
         except:
+            failed_files.append(file[0])
             continue
-        s3c.put_object(
-            Body=body.getvalue(),
-            Bucket=bucket_name,
-            Key=file[1],
-        )
+
         s3c.delete_object(Bucket=bucket_name, Key=file[0])
+
+    # delete the rest of the files in the input subfolder
+    s3r = boto3.resource(
+        "s3",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+    bucket = s3r.Bucket(bucket_name)
+
+    for obj in bucket.objects.all():
+        key = obj.key
+        if (
+            len(key.split("/")) == 3
+            and key.split("/")[1] == "input"
+            and key.split("/")[2] != ""
+        ):
+            s3c.delete_object(Bucket=bucket_name, Key=key)
 
     return {
         "function_name": "Bolt-PO-CleanUp",
+        "files failed to save": failed_files,
     }
