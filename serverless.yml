@@ -74,3 +74,16 @@ functions:
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
+  StartStop2:
+    name: Bolt-PO-StartStopEC2_v2
+    handler: bolt_startstop_v2.handler
+    module: start_stop_ec2
+    description: Bolt-PO lambda function to start or stop the associated EC2 machines v2
+    timeout: 120 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
