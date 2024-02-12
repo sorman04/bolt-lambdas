@@ -1,4 +1,4 @@
-service: serverless-lambda-python
+service: serverless-bolt-po-functions
 
 #useDotenv: true
 
