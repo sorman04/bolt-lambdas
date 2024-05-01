@@ -668,7 +668,7 @@ def handler(event, context):
             "/tmp/Bulk PO.zip", 
             "bolt-projects", 
             "purchasing-orders/input/Bulk PO.zip")
-    except Exception as e:
+    except Exception as err:
         reply = {
                 "function_name": "Scrapper",
                 "error_message": f"Bulk PO transfer to s3 error: {str(err)}",
@@ -681,7 +681,7 @@ def handler(event, context):
             "/tmp/mov_data.csv", 
             "bolt-projects", 
             "purchasing-orders/input/mov_data.csv")
-    except Exception as e:
+    except Exception as err:
         reply = {
                 "function_name": "Scrapper",
                 "error_message": f"Bulk PO transfer to s3 error: {str(err)}",
