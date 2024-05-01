@@ -1,4 +1,4 @@
-name: Deploy Lambda functions
+name: Deploy Lambda functions for Bolt PO robot
 
 on:
   push:
