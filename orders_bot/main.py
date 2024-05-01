@@ -54,7 +54,7 @@ sm_client = session.client(
 
 try:
     response = sm_client.get_secret_value(
-        SecretId=''
+        SecretId='BoltPo-Robot'
     )
     secrets = json.loads(response['SecretString'])
 except ClientError as e:
