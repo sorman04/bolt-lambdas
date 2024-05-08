@@ -140,7 +140,6 @@ def handler(event, context):
     )
     if len(btn_list) > 0:
         logger.info("we are still on the login page. Authentication probably failed.")
-        logger.info(f"Login error: {str(e)}")
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
