@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+## =================== DESCRIPTION =================== #
+Description: >-
+  AWS CloudFormation template. 
+  Creates the BoltPo Scrapper lambda function and its IAM role from an ECR image
+  located in s3://lambdafunc-definitions
+
+## ================== PARAMETERS ================= ##
+Parameters:
+  paramLambdaName:
+    Description: the name of the lambda function
+    Type: String
+    Default: BoltPO-Scrapper
+  paramImageUri:
+    Description: the uri of the lambda image
+    Type: String
+
+## ================== RESOURCES ================= ##
+Resources:
+  LambdaFunctionExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ScrapperLambdaExecRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${paramLambdaName}-Lambda-cloudwatch"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                Resource: "*"
+        - PolicyName: !Sub "${paramLambdaName}-Lambda-ECR-read"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:SetRepositoryPolicy
+                  - ecr:GetRepositoryPolicy
+                Resource: "*"
+        - PolicyName: !Sub "${paramLambdaName}-Lambda-Secrets-read"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: "*"
+        - PolicyName: !Sub "${paramLambdaName}-Lambda-S3-readwrite"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*Object
+                  - s3:ListBucket
+                Resource: "*"
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref paramLambdaName
+      Description: Bolt Po Scrapping function
+      Role: !GetAtt LambdaFunctionExecRole.Arn
+      Code:
+        ImageUri: !Ref paramImageUri
+      PackageType: Image
+      MemorySize: 2048
+      Timeout: 180
+      LoggingConfig:
+        ApplicationLogLevel: TRACE
+        LogFormat: JSON
+        LogGroup: !Ref LogGroup
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub "${paramLambdaName}-LambdaLogGroup"
+
+## ============ OUTPUTS ===========================##
+Outputs:
+  lambdaArn:
+    Description: the ARN of the created lambda function
+    Value: !GetAtt LambdaFunctionExecRole.Arn
+  logGroupName:
+    Description: the name of the log group
+    Value: !Ref LogGroup

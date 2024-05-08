@@ -6,6 +6,7 @@ from logging import INFO
 from time import sleep
 from datetime import datetime
 from botocore.exceptions import ClientError
+from tempfile import mkdtemp
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -19,14 +20,23 @@ DOWNLOAD_DIR = "/tmp"
 WAIT_TIME = 10
 
 options = webdriver.ChromeOptions()
+service = webdriver.ChromeService("/opt/chromedriver")
+
+options.binary_location = '/opt/chrome/chrome'
 options.add_argument("--headless=new")
-options.add_argument("--start-maximized")
-options.add_argument("--no-sandbox")
+options.add_argument('--no-sandbox')
 options.add_argument("--disable-gpu")
+options.add_argument("--start-maximized")
+options.add_argument("--single-process")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-dev-tools")
+options.add_argument("--no-zygote")
 options.add_argument("--ignore-certificate-errors")
 options.add_argument("--ignore-ssl-errors")
-options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--remote-debugging-port=9222")
+options.add_argument(f"--user-data-dir={mkdtemp()}")
+options.add_argument(f"--data-path={mkdtemp()}")
+options.add_argument(f"--disk-cache-dir={mkdtemp()}")
 
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option("useAutomationExtension", False)
@@ -74,6 +84,7 @@ AWS_SECRET_ACCESS_KEY = secrets["AWS_SECRET_ACCESS_KEY"]
 def handler(event, context):
     try:
         driver = webdriver.Chrome(
+            service=service,
             options=options
         )  # no service needed here since we work with selenium image
         logger.info("Headless Chrome initialized")
@@ -121,25 +132,43 @@ def handler(event, context):
                 "error_details": None
             }
         raise ScrapperException(reply)
-
-    logger.info("Login successful")
-
-    # select Delivery Options page
-    try:
-        WebDriverWait(driver, WAIT_TIME).until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    '//*[@id="main-content-box"]/div/aside/div[2]/div/div[1]/ul[1]/li[8]/a',
-                )
-            )
-        ).click()
-    except Exceptions.TimeoutException:
-        logger.critical("Delivery Orders link not visible in time.")
+    sleep(3)
+    
+    # check if we are still on the login page
+    btn_list = driver.find_elements(
+        By.XPATH, '//*[@id="root"]/div/div[1]/div/div[2]/div/form/button'
+    )
+    if len(btn_list) > 0:
+        logger.info("we are still on the login page. Authentication probably failed.")
+        logger.info(f"Login error: {str(e)}")
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": "Delivery Orders link not visible in time. Abort",
+                "error_message": "Authentication failed. Abort",
+                "error_details": None
+            }
+        raise ScrapperException(reply)
+    else:
+        logger.info("Moved from login page")
+
+    # select Delivery Options page
+    try:
+        delivery_link = driver.find_element(
+            By.XPATH,
+            '//*[@id="main-content-box"]/div/aside/div[2]/div/div[1]/ul[1]/li[8]/a'
+            )
+        sleep(1)
+        hover = ActionChains(driver).move_to_element(delivery_link)
+        hover.click().perform()
+        # scroll the link into view and click it
+        #driver.execute_script("arguments[0].scrollIntoView(true);", delivery_link)
+        #delivery_link.click()
+    except Exception as e:
+        logger.critical(f"Delivery Orders link not visible in time or not clickable. Error: {str(e)}")
+        driver.quit()
+        reply = {
+                "function_name": "Scrapper",
+                "error_message": "Delivery Orders link not visible in time or not clickable. Abort",
                 "error_details": None
             }
         raise ScrapperException(reply)
@@ -625,7 +654,7 @@ def handler(event, context):
         raise ScrapperException(reply)
 
     for i in range(nr_attempts):
-        if os.path.exists("/src/date/Bulk PO.zip"):
+        if os.path.exists("/tmp/Bulk PO.zip"):
             is_downloaded = True
             break
         else:
@@ -684,7 +713,7 @@ def handler(event, context):
     except Exception as err:
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"Bulk PO transfer to s3 error: {str(err)}",
+                "error_message": f"mov_data transfer to s3 error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)

@@ -1,11 +1,5 @@
-# Selenium related
-selenium==4.4.3
-webdriver-manager==4.0.1
-
-# other utils
-MarkupSafe==2.1.1
-python-dotenv==0.21.0
-python-multipart==0.0.6
-
 # aws related
-boto3==1.26.151  # covers pandas as well!!
+boto3==1.26.151
+
+# Selenium related
+selenium==4.20.0
