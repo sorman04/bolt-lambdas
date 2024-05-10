@@ -12,9 +12,6 @@
     
 """
 
-
-
-
 import os, csv, ast
 import logging
 import pytz
