@@ -5,14 +5,9 @@ service: serverless-bolt-po-functions
 provider:
   name: aws
   runtime: python3.9
-  stage: dev
+  stage: prod
   region: eu-north-1
-  iamRoleStatements:
-    - 
-      Effect: Allow
-      Action: secretsmanager:GetSecretValue
-      Resource: "*"
-
+  role: arn:aws:iam::442771374669:role/General_Lambda_fullAccess  
 
 plugins:
   - serverless-python-requirements  # we use node to install the dependency called serverless-python...
