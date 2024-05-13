@@ -5,7 +5,7 @@ service: serverless-bolt-po-functions
 provider:
   name: aws
   runtime: python3.9
-  stage: prod
+  stage: dev
   region: eu-north-1
   role: arn:aws:iam::442771374669:role/General_Lambda_fullAccess  
 
