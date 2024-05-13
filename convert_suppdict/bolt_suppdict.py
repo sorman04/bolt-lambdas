@@ -12,28 +12,6 @@ class ConvertException(Exception): pass
 logger = logging.getLogger(__name__)
 logger.setLevel(level=INFO)
 
-session = boto3.session.Session()
-sm_client = session.client(
-    service_name='secretsmanager',
-    region_name='eu-north-1'
-)
-
-try:
-    response = sm_client.get_secret_value(
-        SecretId='AWS_AccessKeys'
-    )
-    secrets = json.loads(response['SecretString'])
-except ClientError as e:
-    logger.critical(f'Error getting secret: {str(e)}')
-    reply = {
-            "function_name": "Convert",
-            "error_message": f"Secrets Manager Error: {str(e)}",
-            "error_details": None
-        }
-    raise ConvertException(reply)
-
-AWS_ACCESS_KEY_ID = secrets["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = secrets["AWS_SECRET_ACCESS_KEY"]
 BUCKET = "bolt-projects"
 
 def handler(event, context):
@@ -41,7 +19,7 @@ def handler(event, context):
     source_file = "purchasing-orders/input/MapareFurnizori_Cadentar_WMS.xlsx"
     target_file = "purchasing-orders/input/dict_suppliers.xlsx"
 
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     # download from S3 and make changes
     try:
