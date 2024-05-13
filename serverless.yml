@@ -1,13 +1,18 @@
-service: serverless-bolt-po-scrapper-functions
+service: serverless-bolt-po-functions
 
 #useDotenv: true
 
 provider:
   name: aws
   runtime: python3.9
-  stage: prod
+  stage: dev
   region: eu-north-1
-  role: arn:aws:iam::442771374669:role/General_Lambda_fullAccess  
+  iamRoleStatements:
+    - 
+      Effect: Allow
+      Action: secretsmanager:GetSecretValue
+      Resource: "*"
+
 
 plugins:
   - serverless-python-requirements  # we use node to install the dependency called serverless-python...
@@ -17,84 +22,65 @@ package:
   individually: true  # include only specified files in the lambda package
 
 functions:
-
-  MailBagger:
-    name: Bolt-PO-MailBag
-    handler: mail_bag.handler
-    module: handle_orders
-    description: Bolt-PO lambda function that generates the MailBag, first iteration
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 1024 # in mb
+  StartStop:
+    name: Bolt-PO-StartStopEC2
+    handler: bolt_startstop.handler
+    module: start_stop_ec2
+    description: Bolt-PO lambda function to start or stop the associated EC2 machines
+    timeout: 120 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
     package: 
       patterns:  # include or exclude files in the lambda package
         - "!node_modules/**"  # exclude the node modules
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
-
-  SuppMod_1:
-    name: Bolt-PO-SuppMod-One
-    handler: mod_1.handler
-    module: handle_orders
-    description: Bolt-PO lambda function that updates suppliers orders - v1
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 1024 # in mb
+  CleanUp:
+    name: Bolt-PO-CleanUp
+    handler: bolt_clean.handler
+    module: cleanup_s3
+    description: Bolt-PO lambda function to clean up input files
+    timeout: 10 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
     package: 
       patterns:  # include or exclude files in the lambda package
         - "!node_modules/**"  # exclude the node modules
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
-
-  SuppMod_2:
-    name: Bolt-PO-SuppMod-Two
-    handler: mod_2.handler
-    module: handle_orders
-    description: Bolt-PO lambda function that updates suppliers orders - v2
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 1024 # in mb
+  CheckHealth:
+    name: Bolt-PO-CheckHealth
+    handler: bolt_check.handler
+    module: check_health
+    description: Bolt-PO lambda function to check EC2-API containers health
+    timeout: 5
+    memorySize: 128
     package: 
       patterns:  # include or exclude files in the lambda package
         - "!node_modules/**"  # exclude the node modules
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
-
-  Mailer:
-    name: Bolt-PO-Mailer
-    handler: mail.handler
-    module: handle_orders
-    description: Bolt-PO lambda function that sends mail to suppliers and bolt
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 1024 # in mb
+  ConvertSuppDict:
+    name: Bolt-PO-Convert-SuppDict
+    handler: bolt_suppdict.handler
+    module: convert_suppdict
+    description: Bolt-PO lambda function to convert suppliers dictionary
+    timeout: 10 # in seconds, max allowed time to run
+    memorySize: 526 # in mb
     package: 
       patterns:  # include or exclude files in the lambda package
         - "!node_modules/**"  # exclude the node modules
         - "!yarn.lock"
         - "!package-lock.json"
         - "!package.json"
-
-  Closer:
-    name: Generic-Robot-Closer
-    handler: close.handler
-    module: handle_orders
-    description: Generic Lambda function that wrapups robot runtime info
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 512 # in mb
-    package: 
-      patterns:  # include or exclude files in the lambda package
-        - "!node_modules/**"  # exclude the node modules
-        - "!yarn.lock"
-        - "!package-lock.json"
-        - "!package.json"
-
-  Cleaner:
-    name: Bolt-PO-s3Cleaner
-    handler: clean.handler
-    module: handle_orders
-    description: deletes the working folder and save runtime files to s3
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 512 # in mb
+  StartStop2:
+    name: Bolt-PO-StartStopEC2_v2
+    handler: bolt_startstop_v2.handler
+    module: start_stop_ec2
+    description: Bolt-PO lambda function to start or stop the associated EC2 machines v2
+    timeout: 120 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
     package: 
       patterns:  # include or exclude files in the lambda package
         - "!node_modules/**"  # exclude the node modules
