@@ -133,7 +133,7 @@ def handler(event, context):
             body_text = f"Executia s-a incheiat cu erori. Verificati log-urile executiei!"
             yag.send(mail_target, subject, body_text)
         except Exception as e:
-            logger.warn(f"Nu s-a putut trimite mailul erori ref {robot_arn.split(':')[-1]}. Eroare: {str(e)}")
+            logger.warning(f"Nu s-a putut trimite mailul erori ref {robot_arn.split(':')[-1]}. Eroare: {str(e)}")
             reply = {
                 'function_name': "RobotClose",
                 'error_message': f"Nu s-a putut trimite mailul erori ref {robot_arn.split(':')[-1]}. Eroare: {str(e)}",
