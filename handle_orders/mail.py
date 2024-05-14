@@ -102,10 +102,10 @@ def handler(event, context):
         # ====== It returns the first 1000 files. use paginator if more than 1000 files are to be downloaded ==== #
         for obj in objects.get('Contents', []):
             s3_key = obj['Key']
-            logger.info(f"s3_key: {s3_key}")
             file_name = os.path.basename(s3_key)
-            local_file_path = os.path.join(tmp_folder, file_name)
-            s3.download_file(BUCKET, s3_key, local_file_path)
+            if file_name != "":
+                local_file_path = os.path.join(tmp_folder, file_name)
+                s3.download_file(BUCKET, s3_key, local_file_path)
     except Exception as e:
         message = f"Orders download failure: {str(e)}"
         logger.critical(message)
