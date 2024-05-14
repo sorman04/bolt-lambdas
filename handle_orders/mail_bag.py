@@ -26,13 +26,13 @@ def handler(event, context):
     mls = "purchasing-orders/input/emails.xlsx"
     dic = "purchasing-orders/input/dict_suppliers.xlsx"
     mov = "purchasing-orders/input/mov_data.csv"
-    zip = "purchasing-orders/input/Bolt PO.zip"
+    zip = "purchasing-orders/input/Bulk PO.zip"
 
     file_cad = "/tmp/cadentar.xlsx"
     file_mails = "/tmp/emails.xlsx"
     file_dict = "/tmp/dict_suppliers.xlsx"
     file_mov = "/tmp/mov_data.csv"
-    file_zip = "/tmp/Bolt PO.zip"
+    file_zip = "/tmp/Bulk PO.zip"
 
     # download the input files from S3 to local folder
     try:
@@ -46,7 +46,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "One or more input files could not be downloaded from or do not exist on S3",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
 
@@ -75,7 +75,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Cadency file structural errors.",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
 
@@ -101,7 +101,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "There are no suppliers scheduled today. Abort",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
 
@@ -121,7 +121,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Cannot merge dictionary and cadency files. Abort",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
     
@@ -151,7 +151,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Zip extraction error: {str(e)}",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
     logger.info(f"Unzipped daily files.")
@@ -164,7 +164,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "There are no orders generated in WMS today. Abort",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
     
@@ -203,7 +203,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Mov file structural/data errors. Abort",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
 
@@ -253,7 +253,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Mail file structural/data errors. Abort",
-                "error_details": None
+                "error_details": ""
             }
         return BaggerException(reply)
 
@@ -308,7 +308,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Cannot save MailBag to s3. Error: {str(err)}",
-                "error_details": None
+                "error_details": ""
             }
         raise BaggerException(reply)
     
@@ -321,7 +321,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Cannot save data.json to s3. Error: {str(err)}",
-                "error_details": None
+                "error_details": ""
             }
         raise BaggerException(reply)
     
