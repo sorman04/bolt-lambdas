@@ -57,12 +57,6 @@ def modify_jti(cluj_stores, mails_address):
         ]
     except IndexError:
         logger.info("No JTI mails today")
-        reply = {
-                "function_name": "SuppMod-Two",
-                "error_message": "No JTI mails today",
-                "error_details": None
-            }
-        raise ModeTwoException(reply)
 
     files_list = ast.literal_eval(jti_files)
 
@@ -153,12 +147,6 @@ def modify_cristim(cluj_stores, mails_address):
         ]
     except IndexError:
         logger.info("No Cristim mails today")
-        reply = {
-                "function_name": "SuppMod-Two",
-                "error_message": "No Cristim mails today",
-                "error_details": None
-            }
-        raise ModeTwoException(reply)
 
     files_list = ast.literal_eval(crt_files)
 
