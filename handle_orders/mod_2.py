@@ -57,6 +57,7 @@ def modify_jti(cluj_stores, mails_address):
         ]
     except IndexError:
         logger.info("No JTI mails today")
+        return
 
     files_list = ast.literal_eval(jti_files)
 
@@ -147,6 +148,7 @@ def modify_cristim(cluj_stores, mails_address):
         ]
     except IndexError:
         logger.info("No Cristim mails today")
+        return
 
     files_list = ast.literal_eval(crt_files)
 
