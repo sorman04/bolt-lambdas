@@ -235,7 +235,7 @@ def handler(event, context):
     jti_addresses = event.get('jti_addresses')
     
     # download missing S3 input files
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     bag = "purchasing-orders/input/MailBag.csv"
     eml = "purchasing-orders/input/emails.xlsx"

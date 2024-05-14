@@ -16,33 +16,11 @@ class BaggerException(Exception): pass
 logger = logging.getLogger(__name__)
 logger.setLevel(level=INFO)
 
-session = boto3.session.Session()
-sm_client = session.client(
-    service_name='secretsmanager',
-    region_name='eu-central-1'
-)
-
-try:
-    response = sm_client.get_secret_value(
-        SecretId='BoltPo-Robot'
-    )
-    secrets = json.loads(response['SecretString'])
-except ClientError as e:
-    logger.critical(f'Error getting secret: {str(e)}')
-    reply = {
-            "function_name": "MailBagger",
-            "error_message": f"Secrets Manager Error: {str(e)}",
-            "error_details": None
-        }
-    raise BaggerException(reply)
-
-AWS_ACCESS_KEY_ID = secrets["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = secrets["AWS_SECRET_ACCESS_KEY"]
 BUCKET = "bolt-projects"
 
 def handler(event, context):
     # download the daily input files from S3
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     cad = "purchasing-orders/input/cadentar.xlsx"
     mls = "purchasing-orders/input/emails.xlsx"
@@ -321,9 +299,8 @@ def handler(event, context):
         json.dump(response_json, f, ensure_ascii=False, indent=4)
         
     # 10. save the files to S3
-    s3_client = boto3.client("s3", region_name="eu-north-1")
     try:
-        s3_client.upload_file(
+        s3.upload_file(
             "/tmp/MailBag.csv", 
             "bolt-projects", 
             "purchasing-orders/input/MailBag.csv")
@@ -336,7 +313,7 @@ def handler(event, context):
         raise BaggerException(reply)
     
     try:
-        s3_client.upload_file(
+        s3.upload_file(
             "/tmp/data.json", 
             "bolt-projects", 
             "purchasing-orders/input/data.json")

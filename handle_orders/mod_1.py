@@ -454,7 +454,7 @@ def quadrant_mods(name_elements, old_name):
 
 def handler(event, context):
     # download missing S3 input files
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     bax = "purchasing-orders/input/Cerinte comanda minima.xlsx"
     auc = "purchasing-orders/input/Coduri Auchan.xlsx"
