@@ -55,7 +55,7 @@ MAIL_PASSWORD = secrets["MAIL_PASSWORD"]
 tmp_folder = "/tmp/wrk"
 os.makedirs(tmp_folder)
 
-BUCKET = "bolt-projects"
+
 RL_TO_RECIPIENTS = ["sorin@robotlab.ro", "cosmin@robotlab.ro"]
 RL_CC_RECIPIENTS = ["office@robotlab.ro"]
 BL_RECIPIENTS = ["rosupplychain@bolt.eu"]
@@ -64,6 +64,8 @@ MASK_SENDER = {MAIL_SENDER: BL_RECIPIENTS[0]}
 
 
 def handler(event, context):
+    
+    BUCKET = "bolt-projects"
     
     mailing_context = event.get("mailing_context")
     
@@ -100,10 +102,9 @@ def handler(event, context):
         # ====== It returns the first 1000 files. use paginator if more than 1000 files are to be downloaded ==== #
         for obj in objects.get('Contents', []):
             s3_key = obj['Key']
+            logger.info(f"s3_key: {s3_key}")
             file_name = os.path.basename(s3_key)
-            logger.info(f"path: {tmp_folder}, name: {file_name}")
             local_file_path = os.path.join(tmp_folder, file_name)
-            logger.info(f"local_file_path: {local_file_path}")
             s3.download_file(BUCKET, s3_key, local_file_path)
     except Exception as e:
         message = f"Orders download failure: {str(e)}"
