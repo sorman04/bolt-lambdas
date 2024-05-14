@@ -52,7 +52,7 @@ except ClientError as e:
 MAIL_SENDER = secrets["MAIL_SENDER"]
 MAIL_PASSWORD = secrets["MAIL_PASSWORD"]
 
-tmp_folder = "/tmp/wrk/"
+tmp_folder = "/tmp/wrk"
 os.makedirs(tmp_folder)
 
 BUCKET = "bolt-projects"
