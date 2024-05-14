@@ -8,7 +8,6 @@ import pandas as pd
 
 from datetime import datetime
 from zipfile import ZipFile
-from botocore.exceptions import ClientError
 from logging import INFO
 
 class BaggerException(Exception): pass
@@ -46,7 +45,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"One or more input files could not be downloaded from or do not exist on S3: {str(e)}",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
 
@@ -75,7 +74,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Cadency file structural errors: : {str(e)}",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
 
@@ -101,7 +100,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "There are no suppliers scheduled today. Abort",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
 
@@ -121,7 +120,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Cannot merge dictionary and cadency files. Abort",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
     
@@ -151,7 +150,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Zip extraction error: {str(e)}",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
     logger.info("Unzipped daily files.")
@@ -164,7 +163,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "There are no orders generated in WMS today. Abort",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
     
@@ -203,7 +202,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Mov file structural/data errors. Abort",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
 
@@ -253,7 +252,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": "Mail file structural/data errors. Abort",
-                "error_details": ""
+                "error_details": None
             }
         return BaggerException(reply)
 
@@ -308,7 +307,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Cannot save MailBag to s3. Error: {str(err)}",
-                "error_details": ""
+                "error_details": None
             }
         raise BaggerException(reply)
     
@@ -321,7 +320,7 @@ def handler(event, context):
         reply = {
                 "function_name": "MailBagger",
                 "error_message": f"Cannot save data.json to s3. Error: {str(err)}",
-                "error_details": ""
+                "error_details": None
             }
         raise BaggerException(reply)
     

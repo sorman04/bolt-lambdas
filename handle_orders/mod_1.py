@@ -459,11 +459,11 @@ def handler(event, context):
     bax = "purchasing-orders/input/Cerinte comanda minima.xlsx"
     auc = "purchasing-orders/input/Coduri Auchan.xlsx"
     bag = "purchasing-orders/input/MailBag.csv"
-    zip = "purchasing-orders/input/Bolt PO.zip"
+    zip = "purchasing-orders/input/Bulk PO.zip"
 
     file_baxaj = "/tmp/Cerinte comanda minima.xlsx"
     file_auchan = "/tmp/Coduri Auchan.xlsx"
-    file_zip = "/tmp/Bolt PO.zip"
+    file_zip = "/tmp/Bulk PO.zip"
     file_bag = "/tmp/MailBag.csv"
 
     # download the input files from S3 to local folder
@@ -472,11 +472,11 @@ def handler(event, context):
         s3.download_file(BUCKET, auc, file_auchan)
         s3.download_file(BUCKET, bag, file_bag)
         s3.download_file(BUCKET, zip, file_zip)
-    except:
-        logger.critical("Failed to download one or more input files from S3")
+    except Exception as e:
+        logger.critical(f"Failed to download one or more input files from S3: {str(e)}")
         reply = {
                 "function_name": "SuppMod-One",
-                "error_message": "One or more input files could not be downloaded from or do not exist on S3",
+                "error_message": f"One or more input files could not be downloaded from or do not exist on S3: {str(e)}",
                 "error_details": None
             }
         raise ModeOneException(reply)
