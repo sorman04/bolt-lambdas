@@ -247,11 +247,11 @@ def handler(event, context):
     try:
         s3.download_file(BUCKET, bag, file_bag)
         s3.download_file(BUCKET, eml, file_eml)
-    except:
-        logger.critical("Failed to download one or more input files from S3")
+    except Exception as e:
+        logger.critical(f"Failed to download one or more input files from S3: {str(e)}")
         reply = {
                 "function_name": "SuppMod-Two",
-                "error_message": "One or more input files could not be downloaded from or do not exist on S3",
+                "error_message": f"One or more input files could not be downloaded from or do not exist on S3: {str(e)}",
                 "error_details": None
             }
         raise ModeTwoException(reply)

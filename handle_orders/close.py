@@ -130,7 +130,7 @@ def handler(event, context):
         try:
             yag = yagmail.SMTP('noreply@robotlab.ro', MAIL_PASSWORD)
             subject = f"URGENT - Eroare Robot {robot_arn.split(':')[-1]}"
-            body_text = f"Executia s-a incheiat cu erori. Verificati log-urile executiei!"
+            body_text = "Executia s-a incheiat cu erori. Verificati log-urile executiei!"
             yag.send(mail_target, subject, body_text)
         except Exception as e:
             logger.warning(f"Nu s-a putut trimite mailul erori ref {robot_arn.split(':')[-1]}. Eroare: {str(e)}")
