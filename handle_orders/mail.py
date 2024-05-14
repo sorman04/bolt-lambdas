@@ -68,7 +68,7 @@ def handler(event, context):
     mailing_context = event.get("mailing_context")
     
     # download the working files
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     bag = "purchasing-orders/input/MailBag.csv"
     jsn = "purchasing-orders/input/data.json"

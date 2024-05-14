@@ -11,7 +11,7 @@ logger.setLevel(level=logging.INFO)
 
 
 def delete_all_in_folder(bucket_name, folder_prefix, age):
-    s3 = boto3.client("s3", region="eu-north-1")
+    s3 = boto3.client("s3")
 
     threshold_date = datetime.now(pytz.timezone("Europe/Bucharest")) - timedelta(days=age)
     
@@ -57,7 +57,7 @@ def handler(event, context):
         for file in input_files
     ]
 
-    s3c = boto3.client("s3", region="eu-north-1")
+    s3c = boto3.client("s3")
 
     # Change files names, save the files to archive folder and delete the rest of them
     failed_files = []

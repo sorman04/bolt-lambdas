@@ -17,13 +17,13 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 logger.setLevel(level=INFO)
 
-session = boto3.session.Session()
-sm_client = session.client(
-    service_name='secretsmanager',
-    region_name='eu-central-1'
-)
-
 def handler(event, context):
+    
+    session = boto3.session.Session()
+    sm_client = session.client(
+        service_name='secretsmanager',
+        region_name='eu-central-1'
+    )
     
     try:
         response = sm_client.get_secret_value(
