@@ -41,11 +41,11 @@ def handler(event, context):
         s3.download_file(BUCKET, dic, file_dict)
         s3.download_file(BUCKET, mov, file_mov)
         s3.download_file(BUCKET, zip, file_zip)
-    except:
-        logger.critical("Failed to download one or more input files from S3")
+    except Exception as e:
+        logger.critical(f"Failed to download one or more input files from S3: {str(e)}")
         reply = {
                 "function_name": "MailBagger",
-                "error_message": "One or more input files could not be downloaded from or do not exist on S3",
+                "error_message": f"One or more input files could not be downloaded from or do not exist on S3: {str(e)}",
                 "error_details": ""
             }
         return BaggerException(reply)
@@ -70,11 +70,11 @@ def handler(event, context):
             24: "has_go",
         }
         df_cad.rename(columns=columns, inplace=True)
-    except:
-        logger.critical("Cadency file structural errors.")
+    except Exception as e:
+        logger.critical(f"Cadency file structural errors: : {str(e)}")
         reply = {
                 "function_name": "MailBagger",
-                "error_message": "Cadency file structural errors.",
+                "error_message": f"Cadency file structural errors: : {str(e)}",
                 "error_details": ""
             }
         return BaggerException(reply)
@@ -154,7 +154,7 @@ def handler(event, context):
                 "error_details": ""
             }
         return BaggerException(reply)
-    logger.info(f"Unzipped daily files.")
+    logger.info("Unzipped daily files.")
 
     # 2. check if we have order files
     nr_wms = len(bulk_name)
