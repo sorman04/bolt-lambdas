@@ -26,8 +26,8 @@ logger.setLevel(level=INFO)
 today = datetime.now()
 BUCKET = "bolt-projects"
 
-tmp_folder = "/tmp/wrk/"
-os.makedirs(tmp_folder)
+wrk_folder = "/tmp/wrk"
+os.makedirs(wrk_folder)
 
 def danone_mods(name_elements, old_name):
     # add column in Danone PO files
@@ -64,7 +64,7 @@ def danone_mods(name_elements, old_name):
         raise ModeOneException(reply)
 
     try:
-        df = pd.read_excel(os.path.join(tmp_folder, old_name))
+        df = pd.read_excel(os.path.join(wrk_folder, old_name))
     except FileNotFoundError:
         logger.critical(f"Could not find {old_name}")
         reply = {
@@ -76,7 +76,7 @@ def danone_mods(name_elements, old_name):
 
     df["Cod magazin"] = store_id
     df["EAN"] = df["EAN"].astype(str)
-    df.to_excel(os.path.join(tmp_folder, old_name), index=False)
+    df.to_excel(os.path.join(wrk_folder, old_name), index=False)
     
     del df
     
@@ -193,7 +193,7 @@ def auchan_mods(name_elements, old_name):
 
     # 2. modify content
     try:
-        df_po = pd.read_excel(os.path.join(tmp_folder, old_name))
+        df_po = pd.read_excel(os.path.join(wrk_folder, old_name))
     except FileNotFoundError:
         message = f"File {old_name} not found - Auchan -"
         logger.critical(message)
@@ -276,7 +276,7 @@ def auchan_mods(name_elements, old_name):
             "Timestamp",
         ]
     ].copy()
-    df.to_excel(os.path.join(tmp_folder, old_name), index=False)
+    df.to_excel(os.path.join(wrk_folder, old_name), index=False)
     
     del df, df_po
 
@@ -287,7 +287,7 @@ def auchan_mods(name_elements, old_name):
 def cocacola_mods(old_name):
     # modify file content
     try:
-        df_po = pd.read_excel(os.path.join(tmp_folder, old_name))
+        df_po = pd.read_excel(os.path.join(wrk_folder, old_name))
     except FileNotFoundError:
         message = f"File {old_name} not found - CocaCola/Stockday -"
         logger.critical(message)
@@ -334,7 +334,7 @@ def cocacola_mods(old_name):
 
     df_po.drop(columns=["Bax", "SKU"], inplace=True)
 
-    df_po.to_excel(os.path.join(tmp_folder, old_name), index=False)
+    df_po.to_excel(os.path.join(wrk_folder, old_name), index=False)
     
     del df_po, df_bx
 
@@ -345,7 +345,7 @@ def cocacola_mods(old_name):
 def quadrant_mods(name_elements, old_name):
     # modify file content
     try:
-        df_po = pd.read_excel(os.path.join(tmp_folder, old_name))
+        df_po = pd.read_excel(os.path.join(wrk_folder, old_name))
     except FileNotFoundError:
         message = f"Could not find {old_name} - Quadrant -"
         logger.critical(message)
@@ -392,7 +392,7 @@ def quadrant_mods(name_elements, old_name):
     df_po.drop(columns=["Bax", "SKU", "No."], inplace=True)
     df_po["EAN"] = df_po["EAN"].astype(str)
 
-    df_po.to_excel(os.path.join(tmp_folder, old_name), index=False)
+    df_po.to_excel(os.path.join(wrk_folder, old_name), index=False)
 
     # rename file
     try:
@@ -484,7 +484,7 @@ def handler(event, context):
     # unzip the daily orders file
     try:
         with ZipFile(file_zip) as zipfile:
-            zipfile.extractall("/tmp")
+            zipfile.extractall(wrk_folder)
     except Exception as e:
         logger.info(f"Zip extraction error: {str(e)}")
         reply = {
@@ -519,7 +519,7 @@ def handler(event, context):
 
                 # rename the actual file in the tmp folder
                 os.rename(
-                    os.path.join(tmp_folder, file), os.path.join(tmp_folder, new_name)
+                    os.path.join(wrk_folder, file), os.path.join(wrk_folder, new_name)
                 )
 
                 # replace the item in MailBag
@@ -538,7 +538,7 @@ def handler(event, context):
                     continue
                 # rename the actual file in the tmp folder
                 os.rename(
-                    os.path.join(tmp_folder, file), os.path.join(tmp_folder, new_name)
+                    os.path.join(wrk_folder, file), os.path.join(wrk_folder, new_name)
                 )
                 # replace the item in MailBag
                 files_list = files_list.replace(file, new_name)
@@ -554,7 +554,7 @@ def handler(event, context):
 
                 # rename the actual file in the tmp folder
                 os.rename(
-                    os.path.join(tmp_folder, file), os.path.join(tmp_folder, new_name)
+                    os.path.join(wrk_folder, file), os.path.join(wrk_folder, new_name)
                 )
 
                 # replace the item in MailBag
@@ -584,10 +584,9 @@ def handler(event, context):
         raise ModeOneException(reply)
 
     try:
-        files = os.listdir(tmp_folder)
-
+        files = os.listdir(wrk_folder)
         for file_name in files:
-            file_path = os.path.join(tmp_folder, file_name)
+            file_path = os.path.join(wrk_folder, file_name)
             s3_key = f'purchasing-orders/wrk/{file_name}'
             s3.upload_file(file_path, BUCKET, s3_key)
     except Exception as err:
