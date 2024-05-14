@@ -101,7 +101,9 @@ def handler(event, context):
         for obj in objects.get('Contents', []):
             s3_key = obj['Key']
             file_name = os.path.basename(s3_key)
+            logger.info(f"path: {tmp_folder}, name: {file_name}")
             local_file_path = os.path.join(tmp_folder, file_name)
+            logger.info(f"local_file_path: {local_file_path}")
             s3.download_file(BUCKET, s3_key, local_file_path)
     except Exception as e:
         message = f"Orders download failure: {str(e)}"
@@ -112,6 +114,7 @@ def handler(event, context):
                 "error_details": None
             }
         raise MailerException(reply)
+    logger.info("Orders successfully downloaded")
     
     # read summary details for bolt daily mail
     with open("/tmp/data.json", "r", encoding="utf-8") as file:
@@ -121,8 +124,7 @@ def handler(event, context):
         not_in_mov = orders_summary["details"]["not-in-mov"]
         no_mov = orders_summary["details"]["no-mov"]
         both_mov = orders_summary["details"]["both-mov"]
-        
-    logger.info("exceptions loaded")
+    logger.info("Exceptions loaded")
 
     # start scanning the Mailbag and sending mails
     no_addresses = []
