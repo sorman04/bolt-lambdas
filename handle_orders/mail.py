@@ -120,11 +120,11 @@ def handler(event, context):
     # read summary details for bolt daily mail
     with open("/tmp/data.json", "r", encoding="utf-8") as file:
         orders_summary = json.load(file)
-        not_in_cad = orders_summary["details"]["not-in-cad"]
-        not_in_wms = orders_summary["details"]["not-in-wms"]
-        not_in_mov = orders_summary["details"]["not-in-mov"]
-        no_mov = orders_summary["details"]["no-mov"]
-        both_mov = orders_summary["details"]["both-mov"]
+        not_in_cad = orders_summary["error_details"]["not-in-cad"]
+        not_in_wms = orders_summary["error_details"]["not-in-wms"]
+        not_in_mov = orders_summary["error_details"]["not-in-mov"]
+        no_mov = orders_summary["error_details"]["no-mov"]
+        both_mov = orders_summary["error_details"]["both-mov"]
     logger.info("Exceptions loaded")
 
     # start scanning the Mailbag and sending mails
