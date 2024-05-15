@@ -597,10 +597,8 @@ def handler(event, context):
             }
         raise ModeOneException(reply)
     
-    response_json = {
+    return {
         "function_name": "SuppMod-One",
         "error_message": None,
         "error_details": None
         }
-    
-    return json.dumps(response_json)

@@ -101,4 +101,4 @@ def handler(event, context):
             "error_details": None
             }
     
-    return json.dumps(response)
+    return response

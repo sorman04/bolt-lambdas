@@ -339,10 +339,8 @@ def handler(event, context):
             }
         raise MailerException(reply)
     
-    response_json = {
+    return {
         "function_name": "Mailer",
         "error_message": None,
         "error_details": None
         }
-    
-    return json.dumps(response_json)

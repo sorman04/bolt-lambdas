@@ -38,7 +38,7 @@ def handler(event, context):
                 "error_message": f"Secrets Manager Error: {str(e)}",
                 "error_details": None
             }
-        return json.dumps(reply)
+        return reply
     
     ddb_region = event.get('ddb_region')
     spf_region = event.get('spf_region')
@@ -139,14 +139,14 @@ def handler(event, context):
                 'error_message': f"Nu s-a putut trimite mailul erori ref {robot_arn.split(':')[-1]}. Eroare: {str(e)}",
                 'error_details': error_details
             }
-            return json.dumps(reply)
+            return reply
 
         reply = {
                 'function_name': "RobotClose",
                 'error_message': "Executia s-a incheiat cu erori. Verificati detaliile",
                 'error_details': error_details
             }
-        return json.dumps(reply)
+        return reply
     
     reply = {
         'function_name': "RobotClose",
@@ -154,4 +154,4 @@ def handler(event, context):
         'error_details': None
         }
     
-    return json.dumps(reply)
+    return reply

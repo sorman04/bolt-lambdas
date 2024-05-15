@@ -263,10 +263,8 @@ def handler(event, context):
             }
         raise ModeTwoException(reply)
     
-    response_json = {
+    return {
         "function_name": "SuppMod-Two",
         "error_message": None,
         "error_details": None
         }
-    
-    return json.dumps(response_json)

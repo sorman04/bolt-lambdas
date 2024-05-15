@@ -326,4 +326,8 @@ def handler(event, context):
     
     logger.info("procedure finalized and stopped successfully")
 
-    return json.dumps(response_json)
+    return {
+        "function_name": "MailBagger",
+        "error_message": None,
+        "error_details": None
+        }

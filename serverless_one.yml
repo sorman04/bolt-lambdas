@@ -1,0 +1,71 @@
+service: serverless-bolt-po-functions
+
+#useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: dev
+  region: eu-north-1
+  role: arn:aws:iam::442771374669:role/General_Lambda_fullAccess  
+
+plugins:
+  - serverless-python-requirements  # we use node to install the dependency called serverless-python...
+  #- serverless-dotenv-plugin # requested in order to use env variables
+
+package: 
+  individually: true  # include only specified files in the lambda package
+
+functions:
+  StartStop:
+    name: Bolt-PO-StartStopEC2
+    handler: bolt_startstop.handler
+    module: start_stop_ec2
+    description: Bolt-PO lambda function to start or stop the associated EC2 machines
+    timeout: 120 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
+  CleanUp:
+    name: Bolt-PO-CleanUp
+    handler: bolt_clean.handler
+    module: cleanup_s3
+    description: Bolt-PO lambda function to clean up input files
+    timeout: 10 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
+  CheckHealth:
+    name: Bolt-PO-CheckHealth
+    handler: bolt_check.handler
+    module: check_health
+    description: Bolt-PO lambda function to check EC2-API containers health
+    timeout: 5
+    memorySize: 128
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
+  StartStop2:
+    name: Bolt-PO-StartStopEC2_v2
+    handler: bolt_startstop_v2.handler
+    module: start_stop_ec2
+    description: Bolt-PO lambda function to start or stop the associated EC2 machines v2
+    timeout: 120 # in seconds, max allowed time to run
+    memorySize: 128 # in mb
+    package: 
+      patterns:  # include or exclude files in the lambda package
+        - "!node_modules/**"  # exclude the node modules
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
