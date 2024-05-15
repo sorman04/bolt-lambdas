@@ -1,6 +1,5 @@
-import io
+import io, os
 import pytz
-import json
 import logging
 import boto3
 
@@ -20,7 +19,7 @@ def delete_all_in_folder(bucket_name, folder_prefix, age):
         objects = [
             {'Key': obj['Key']} 
             for obj in response['Contents']
-            if obj['LastModified'] < threshold_date
+            if (obj['LastModified'] < threshold_date) & (os.path.basename(obj['Key']) != '')
             ]
 
         # Delete the objects
