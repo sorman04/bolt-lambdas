@@ -60,20 +60,6 @@ functions:
         - "!package-lock.json"
         - "!package.json"
 
-  Mailer:
-    name: Bolt-PO-Mailer
-    handler: mail.handler
-    module: handle_orders
-    description: Bolt-PO lambda function that sends mail to suppliers and bolt
-    timeout: 180 # in seconds, max allowed time to run
-    memorySize: 512 # in mb
-    package: 
-      patterns:  # include or exclude files in the lambda package
-        - "!node_modules/**"  # exclude the node modules
-        - "!yarn.lock"
-        - "!package-lock.json"
-        - "!package.json"
-
   Closer:
     name: Generic-Robot-Closer
     handler: close.handler
