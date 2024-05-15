@@ -67,7 +67,15 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource: "*"
-
+        - PolicyName: !Sub "${paramLambdaName}-Lambda-S3-readwrite"
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*Object
+                  - s3:ListBucket
+                Resource: "*"
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
