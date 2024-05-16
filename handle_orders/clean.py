@@ -23,11 +23,13 @@ def delete_all_in_folder(bucket_name, folder_prefix, age):
             ]
 
         # Delete the objects
-        delete_response = s3.delete_objects(
-            Bucket=bucket_name,
-            Delete={'Objects': objects}
-        )
-    logger.info(f"Delete objects in: {folder_prefix}")
+        if len(objects) > 0:
+            delete_response = s3.delete_objects(
+                Bucket=bucket_name,
+                Delete={'Objects': objects}
+            )
+        else:
+            logger.info(f"Nothing to delete in: {folder_prefix}")
     return
 
 
