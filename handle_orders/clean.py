@@ -27,7 +27,7 @@ def delete_all_in_folder(bucket_name, folder_prefix, age):
             Bucket=bucket_name,
             Delete={'Objects': objects}
         )
-    
+    logger.info(f"Delete objects in: {folder_prefix}")
     return
 
 
@@ -61,9 +61,9 @@ def handler(event, context):
     # Change files names, save the files to archive folder and delete the rest of them
     failed_files = []
     for file in files:
-        if file[0] == "purchasing-orders/input/Bulk PO.zip":
+        if file[0] == "purchasing-orders/zip-archive/Bulk PO.zip":
             file[0] = file[0].replace(" ", "")
-            file[1] = file[0].split(".")[0].replace("input", "zip-archive") + f"({today})." + file[0].split(".")[1]
+            file[1] = file[0].split(".")[0] + f"({today})." + file[0].split(".")[1]
         try:
             obj = s3c.get_object(Bucket=BUCKET, Key=file[0])
             body = io.BytesIO(obj["Body"].read())
