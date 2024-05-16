@@ -39,8 +39,8 @@ def handler(event, context):
     BUCKET = "bolt-projects"
 
     input_files = [
-        "purchasing-orders/zip-archive/BulkPO.zip",
-        "purchasing-orders/zip-archive/MailBag.csv",
+        "purchasing-orders/input/Bulk PO.zip",
+        "purchasing-orders/input/MailBag.csv",
         "purchasing-orders/input/cadentar.xlsx",
         "purchasing-orders/input/emails.xlsx",
         "purchasing-orders/input/MapareFurnizori_Cadentar_WMS.xlsx",
@@ -61,6 +61,9 @@ def handler(event, context):
     # Change files names, save the files to archive folder and delete the rest of them
     failed_files = []
     for file in files:
+        if file[0] == "purchasing-orders/input/Bulk PO.zip":
+            file[0] = file[0].replace(" ", "")
+            file[1] = file[0].split(".")[0].replace("input", "zip-archive") + f"({today})." + file[0].split(".")[1]
         try:
             obj = s3c.get_object(Bucket=BUCKET, Key=file[0])
             body = io.BytesIO(obj["Body"].read())
