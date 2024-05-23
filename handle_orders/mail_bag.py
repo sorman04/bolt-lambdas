@@ -78,7 +78,6 @@ def handler(event, context):
             }
         return BaggerException(reply)
 
-
     # make sure we have no leading or trailing spaces in supplier_cad
     df_cad["supplier_cad"] = df_cad.apply(
         lambda row: row["supplier_cad"].strip(), axis=1

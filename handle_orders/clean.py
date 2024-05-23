@@ -35,7 +35,7 @@ def delete_all_in_folder(bucket_name, folder_prefix, age):
 
 def handler(event, context):
     # add runtime date to Bulk and MailBag files
-    today = datetime.now()
+    today = datetime.now(pytz.timezone("Europe/Bucharest"))
     today = today.strftime("%d-%m-%YT%H:%M")
 
     BUCKET = "bolt-projects"
