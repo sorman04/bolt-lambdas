@@ -9,7 +9,7 @@
     5. Quadrant: same as Coca Cola plus rename the PO files
     
 """
-import os, ast, json
+import os, ast, pytz
 import logging
 import pandas as pd
 import boto3
@@ -23,7 +23,7 @@ class ModeOneException(Exception): pass
 logger = logging.getLogger(__name__)
 logger.setLevel(level=INFO)
 
-today = datetime.now()
+today = datetime.now(pytz.timezone("Europe/Bucharest"))
 BUCKET = "bolt-projects"
 
 wrk_folder = "/tmp/wrk"
@@ -239,13 +239,13 @@ def auchan_mods(name_elements, old_name):
         raise ModeOneException(reply)
 
     df_po["Cod Client"] = store_tag
-    df_po["Data plasare comenzi"] = today.strftime("%d.%m.%Y")
+    df_po["Data plasare comenzii"] = today.strftime("%d.%m.%Y")
     df_po["Denumire Produs"] = ""
     df_po["Unitate Masura"] = ""
     df_po["Pret Unitar"] = ""
     df_po["Pret"] = ""
     df_po["Total Comanda"] = ""
-    df_po["Timestamp"] = today.strftime("%d.%m.%Y") + " 10:30"
+    df_po["Timestamp"] = today.strftime("%d.%m.%Y %H:%M:%S")
 
     # 3. fill Cod Produs with leading zeros
     try:

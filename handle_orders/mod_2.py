@@ -22,7 +22,7 @@
     
 """
 
-import os, ast, json
+import os, ast
 import logging
 import pandas as pd
 import boto3
