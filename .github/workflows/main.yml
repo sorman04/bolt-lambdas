@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NODE_VERSION: 16  # used for installing the serverless-python-requirements dependency from npm
+      NODE_VERSION: 18  # used for installing the serverless-python-requirements dependency from npm
 
     steps:
     - 
