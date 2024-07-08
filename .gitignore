@@ -163,3 +163,7 @@ node_modules/
 venv/
 
 tests/
+
+*.ipynb
+*.png
+*.html

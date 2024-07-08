@@ -1,3 +1,6 @@
 create-boltpo-mailer-lambda.yml
 Dockerfile
 README.md
+*.html
+*.ipynb
+*.png

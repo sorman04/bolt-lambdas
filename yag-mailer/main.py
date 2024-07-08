@@ -203,11 +203,6 @@ def handler(event, context):
             Avem rugamintea sa <b>atasati codurile de #PO, de pe a doua coloana, pe fiecare factura aferenta livrarilor 
             pentru fiecare locatie.</b>
 
-            Va reamintim ca facturile trebuie trimise la adresa <b><u>invoices.market.RO@bolt.eu</u></b>, cu adresa 
-            <b><u>boltmarketromania@bolt.eu</u></b> in cc.
-            Cererile privind confirmari de sold, verificari de sold, verificari de plati, dar si alte detalii trebuie 
-            trimise la adresa <b><u>boltmarketromania@bolt.eu</u></b>.
-
             Pentru orice intrebare, va rugam sa ne contactati.
             
             Multumim,
