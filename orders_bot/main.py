@@ -2,7 +2,6 @@ import logging
 import csv, json, os
 import boto3
 
-from logging import INFO
 from time import sleep
 from datetime import datetime
 from botocore.exceptions import ClientError
@@ -53,37 +52,34 @@ options.add_experimental_option(
 
 class ScrapperException(Exception): pass
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(level=INFO)
 
-session = boto3.session.Session()
-sm_client = session.client(
-    service_name='secretsmanager',
-    region_name='eu-central-1'
-)
+def get_secret():
+    """
+    retrieves the secrets associated with the sftp account
+    """
 
-try:
-    response = sm_client.get_secret_value(
-        SecretId='BoltPo-Robot'
-    )
-    secrets = json.loads(response['SecretString'])
-except ClientError as e:
-    logger.critical(f'Error getting secret: {str(e)}')
-    reply = {
+    session = boto3.session.Session()
+    client = session.client(service_name='secretsmanager', region_name="eu-central-1")
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId="BoltPo-Robot")
+    except ClientError as err:
+        reply = {
             "function_name": "Scrapper",
-            "error_message": f"Secrets Manager Error: {str(e)}",
+            "error_message": f"Secrets reading error: {err}",
             "error_details": None
         }
-    raise ScrapperException(reply)
+        raise ScrapperException(reply)
 
-WMS_USER = secrets["WMS_USER"]
-WMS_PASS = secrets["WMS_PASS"]
-AWS_ACCESS_KEY_ID = secrets["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = secrets["AWS_SECRET_ACCESS_KEY"]
+    secret = get_secret_value_response['SecretString']
+    return json.loads(secret)
 
-def handler(event, context):
+
+def get_driver():
     try:
-        driver = webdriver.Chrome(
+        mydriver = webdriver.Chrome(
             service=service,
             options=options
         )  # no service needed here since we work with selenium image
@@ -96,10 +92,19 @@ def handler(event, context):
                 "error_details": None
             }
         raise ScrapperException(reply)
-    sleep(2)
+    
+    return mydriver
 
+secrets = get_secret()
+WMS_USER = secrets["WMS_USER"]
+WMS_PASS = secrets["WMS_PASS"]
+
+def handler(event, context):
+
+    driver = get_driver()
     driver.get(WMS_URL)
     sleep(5)
+    
     logger.info("Web Site acquired")
 
     # login into the wms app
@@ -120,8 +125,6 @@ def handler(event, context):
         btn_login = driver.find_element(
             By.XPATH, '//*[@id="root"]/div/div[1]/div/div[2]/div/form/button'
         )
-        sleep(1)
-
         btn_login.click()
     except Exceptions.NoSuchElementException:
         logger.critical("Authentication fields problem. Abort")
@@ -196,20 +199,19 @@ def handler(event, context):
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Tomorrow and later tab general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
     sleep(1)
-
+    
     logger.info("Tab Tomorrow and later selected")
 
     # generate and download the mov data
     mov_data = []
-
     store_container = driver.find_element(
         By.XPATH,
-        '//*[@id="main-content-box"]/div/div[2]/div/div[3]/div[1]/div/div/div[1]/div/div/span/button',
+        '//*[@id="main-content-box"]/div/div/div/div[3]/div/div[1]/div/div/div/div[2]/button',
     )
     store_container.click()
 
@@ -248,7 +250,7 @@ def handler(event, context):
                 col_elements = row.find_elements(By.XPATH, ".//td")
                 supplier = (
                     col_elements[2]
-                    .find_element(By.XPATH, ".//a/div/div/div")
+                    .find_element(By.XPATH, ".//a/div/div/span[1]")
                     .get_attribute("innerHTML")
                 )
                 store = (
@@ -268,7 +270,7 @@ def handler(event, context):
             logger.info(f"Store {i} has {nr_orders} elements")
     logger.info("MOV data generated")
 
-    # save the mov_data file to temporary location until transfer to S3
+    # save the mov_data file to file system
     with open("/tmp/mov_data.csv", "a", newline="") as csv_file:
         writer = csv.writer(csv_file)
         for line in mov_data:
@@ -287,13 +289,13 @@ def handler(event, context):
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Report radio button general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
     sleep(1)
 
-    try:
+    """try:
         generate_page = driver.find_element(By.XPATH, "/html/body/div[4]/div[3]/div")
     except Exceptions.NoSuchElementException:
         logger.critical("Cannot generate report modal window")
@@ -306,11 +308,11 @@ def handler(event, context):
         raise ScrapperException(reply)
     sleep(1)
 
-    logger.info("Generate report page launched")
+    logger.info("Generate report page launched")"""
 
     # select Bulk PO export
     try:
-        rad_elements = generate_page.find_elements(By.XPATH, './/input[@type="radio"]')
+        rad_elements = driver.find_elements(By.XPATH, '//input[@type="radio"]')
         for element in rad_elements:
             if element.get_attribute("value") == "bulk_po":
                 element.click()
@@ -320,19 +322,23 @@ def handler(event, context):
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"BulkPo radio button general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
-
     logger.info("Bulk OP selected")
 
     # select export type
     try:
-        generate_page.find_element(
-            By.XPATH,
-            './/button[contains(@id, "kalep-select-react-") and contains(@id, "-toggle-button")]',
-        ).click()
+        dropdowns = driver.find_elements(
+            By.XPATH, 
+            '//button[contains(@id, "kalep-select-react-") and contains(@id, "-toggle-button")]'
+            )
+        for item in dropdowns:
+            first_line = item.find_element(By.XPATH, ".//div").get_attribute("innerHTML")
+            if first_line == "CSV":
+                item.click()
+                break
         sleep(1)
         driver.find_element(By.XPATH, '//*[text()="XLSX"]').click()
     except Exception as err:
@@ -451,69 +457,64 @@ def handler(event, context):
 
     # select location
     try:
-        generate_page.find_element(By.ID, "city-multi-select-toggle-button").click()
-        sleep(2)
+        driver.find_element(By.ID, "city-multi-select-toggle-button").click()
+        sleep(1)
 
         clj = driver.find_element(By.XPATH, '//*[text()="Cluj-Napoca"]')
-        sleep(2)
+        sleep(1)
         driver.execute_script("arguments[0].click();", clj)
 
         buc = driver.find_element(By.XPATH, '//*[text()="Bucharest"]')
         sleep(1)
         driver.execute_script("arguments[0].click();", buc)
 
-        # hover and click to get rid of the floating list
-        dummy = generate_page.find_element(By.XPATH, '//span[text()="Generate report"]')
-        hover = ActionChains(driver).move_to_element(dummy)
-        hover.click().perform()
-
+        # unselect location
+        driver.find_element(By.ID, "city-multi-select-toggle-button").click()
     except Exception as err:
         logger.critical(err)
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Location selection general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
-
     logger.info("Location selected")
 
     # select store
     try:
         btn_store = driver.find_element(
-            By.XPATH, '//*[@id="storeSelectBox"]/div/div/div/div/span/button'
+            By.XPATH, 
+            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[1]/div[2]/div/div/div/div[2]/button'
         )
         driver.execute_script("arguments[0].click();", btn_store)
         sleep(1)
 
-        store_list = generate_page.find_elements(
+        store_list = driver.find_elements(
             By.XPATH, '//div[@id="store-select-menu"]/div/div/ul/li'
         )
-        for item in store_list:
-            item.click()
+        for store in store_list:
+            driver.execute_script("arguments[0].click();", store)
 
-        # hover and click to get rid of the floating list
-        dummy = generate_page.find_element(By.XPATH, '//span[text()="Generate report"]')
-        hover = ActionChains(driver).move_to_element(dummy)
-        hover.click().perform()
-
+        # unselect store
+        btn_store = driver.find_element(By.XPATH, '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[1]/div[2]/div/div/div/div[2]/button')
+        driver.execute_script("arguments[0].click();", btn_store)
     except Exception as err:
         logger.critical(err)
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Store selection general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
-
     logger.info("Stores selected")
 
     # select suppliers
     try:
         btn_supplier = driver.find_element(
-            By.XPATH, '//*[@id="supplierSelectBox"]/div/div/div/div/div/span/button'
+            By.XPATH, 
+            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[2]/div/div/div/div/div/div[2]/button'
         )
         driver.execute_script("arguments[0].click();", btn_supplier)
         sleep(1)
@@ -521,13 +522,12 @@ def handler(event, context):
         supp_modal = driver.find_element(
             By.XPATH, '//div[@data-overlay-container="true"]/div/div'
         )
-
     except Exception as err:
         logger.critical(err)
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Supplier selection general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
@@ -541,7 +541,7 @@ def handler(event, context):
             is_over = True
 
             # read the visible portion of the list
-            supplier_list = generate_page.find_elements(
+            supplier_list = driver.find_elements(
                 By.XPATH, '//div[@id="supplier-select-menu"]/div/div/ul/li'
             )
             sleep(1)
@@ -567,24 +567,24 @@ def handler(event, context):
         logger.info(f"There are {nr_suppliers} suppliers in the list")
 
         # hover and click to get rid of the floating list
-        dummy = generate_page.find_element(By.XPATH, '//span[text()="Generate report"]')
-        hover = ActionChains(driver).move_to_element(dummy)
-        hover.click().perform()
-
+        btn_supplier = driver.find_element(
+            By.XPATH, 
+            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[2]/div/div/div/div/div/div[2]/button'
+            )
+        driver.execute_script("arguments[0].click();", btn_supplier)
     except Exception as err:
         logger.critical(str(err))
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Supplier selection general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
-
     logger.info("Suppliers selected")
 
     # set the date of the report  ---- not developed yet
-    try:
+    """try:
         date_element = generate_page.find_element(
             By.XPATH, '//input[contains(@id,"mui-") and @placeholder = "dd/mm/yyyy"]'
         )
@@ -615,43 +615,32 @@ def handler(event, context):
             }
         raise ScrapperException(reply)
 
-    logger.info("Current date verified")
+    logger.info("Current date verified")"""
 
-    # check download as zip
+    # check download as zip box and click the Proceed button
     try:
-        generate_page.find_element(
+        driver.find_element(
             By.XPATH,
-            "/html/body/div[4]/div[3]/div/form/div[1]/div/div[5]/label/span[1]/input",
+            "/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/label/span[1]/input",
+        ).click()
+        driver.find_element(
+            By.XPATH, 
+            "/html/body/div[3]/div[3]/div/form/div[2]/button[2]"
         ).click()
     except Exception as err:
         logger.critical(err)
         driver.quit()
         reply = {
                 "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
+                "error_message": f"Download report general error: {str(err)}",
                 "error_details": None
             }
         raise ScrapperException(reply)
-
-    logger.info("Checked ZIP format")
+    logger.info("Generated the report")
 
     # wait until download complete
     nr_attempts = 10
     is_downloaded = False
-    try:
-        generate_page.find_element(
-            By.XPATH, "/html/body/div[4]/div[3]/div/form/div[2]/button[2]"
-        ).click()
-    except Exception as err:
-        logger.critical(str(err))
-        driver.quit()
-        reply = {
-                "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
-                "error_details": None
-            }
-        raise ScrapperException(reply)
-
     for i in range(nr_attempts):
         if os.path.exists("/tmp/Bulk PO.zip"):
             is_downloaded = True
@@ -668,29 +657,20 @@ def handler(event, context):
                 "error_details": None
             }
         raise ScrapperException(reply)
-
     logger.info("File downloaded")
 
     # cancel and quit
     try:
-        generate_page.find_element(
-            By.XPATH, "/html/body/div[4]/div[3]/div/form/div[2]/button[1]"
+        driver.find_element(
+            By.XPATH, "/html/body/div[3]/div[3]/div/form/div[2]/button[1]"
         ).click()
-
-    except Exception as err:
-        logger.warning(str(err))
+    except:
+        pass
+    finally:
         driver.quit()
-        reply = {
-                "function_name": "Scrapper",
-                "error_message": f"general error: {str(err)}",
-                "error_details": None
-            }
-        raise ScrapperException(reply)
-
-    driver.quit()
     
     # save output files to s3
-    s3_client = boto3.client("s3", region_name="eu-north-1")
+    s3_client = boto3.client("s3")
     try:
         s3_client.upload_file(
             "/tmp/Bulk PO.zip", 
@@ -716,7 +696,6 @@ def handler(event, context):
                 "error_details": None
             }
         raise ScrapperException(reply)
-    
     logger.info("procedure finalized and stopped successfully")
 
     return {
