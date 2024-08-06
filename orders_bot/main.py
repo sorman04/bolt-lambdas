@@ -9,6 +9,7 @@ from tempfile import mkdtemp
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
@@ -25,6 +26,7 @@ options.binary_location = '/opt/chrome/chrome'
 options.add_argument("--headless=new")
 options.add_argument('--no-sandbox')
 options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
 options.add_argument("--start-maximized")
 options.add_argument("--single-process")
 options.add_argument("--disable-dev-shm-usage")
@@ -101,11 +103,11 @@ WMS_PASS = secrets["WMS_PASS"]
 
 def handler(event, context):
 
+    # initialize driver and open login page
     driver = get_driver()
-    driver.get(WMS_URL)
-    sleep(5)
-    
+    driver.get(WMS_URL)    
     logger.info("Web Site acquired")
+    sleep(5)
 
     # login into the wms app
     try:
@@ -244,29 +246,28 @@ def handler(event, context):
             ).click()
 
         nr_orders = 0
-        row_elements = driver.find_elements(By.XPATH, "//tr")
+        row_elements = driver.find_elements(By.XPATH, "//table/tbody/tr")
         for row in row_elements:
-            if row.get_attribute("data-key") is not None:
-                col_elements = row.find_elements(By.XPATH, ".//td")
-                supplier = (
-                    col_elements[2]
-                    .find_element(By.XPATH, ".//a/div/div/span[1]")
-                    .get_attribute("innerHTML")
-                )
-                store = (
-                    col_elements[6]
-                    .find_element(By.XPATH, ".//a/div")
-                    .get_attribute("innerHTML")
-                )
-                mov_element = col_elements[7].find_element(By.XPATH, ".//a/div")
-                if mov_element.get_attribute("innerHTML")[0] == "<":
-                    mov = mov_element.get_attribute("innerHTML").split(">")[-1]
-                    has_order = False
-                else:
-                    mov = mov_element.get_attribute("innerHTML")
-                    has_order = True
+            col_elements = row.find_elements(By.XPATH, ".//td")
+            supplier = (
+                col_elements[2]
+                .find_element(By.XPATH, ".//a/div/div/span[1]")
+                .get_attribute("innerHTML")
+            )
+            store = (
+                col_elements[6]
+                .find_element(By.XPATH, ".//a/div")
+                .get_attribute("innerHTML")
+            )
+            mov_element = col_elements[7].find_element(By.XPATH, ".//a/div")
+            if mov_element.get_attribute("innerHTML")[0] == "<":
+                mov = mov_element.get_attribute("innerHTML").split(">")[-1]
+                has_order = False
+            else:
+                mov = mov_element.get_attribute("innerHTML")
+                has_order = True
 
-                mov_data.append([supplier, store, has_order, mov])
+            mov_data.append([supplier, store, has_order, mov])
             logger.info(f"Store {i} has {nr_orders} elements")
     logger.info("MOV data generated")
 
@@ -480,24 +481,33 @@ def handler(event, context):
             }
         raise ScrapperException(reply)
     logger.info("Location selected")
-
+    
+    # scroll down the page to get visibility
+    actions = ActionChains(driver)
+    actions.send_keys(Keys.PAGE_DOWN).perform()
+    
     # select store
     try:
         btn_store = driver.find_element(
             By.XPATH, 
-            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[1]/div[2]/div/div/div/div[2]/button'
+            '//*[@id="storeSelectBox"]/div/div/div/div[2]/button'
         )
-        driver.execute_script("arguments[0].click();", btn_store)
+        driver.execute_script("arguments[0].scrollIntoView(true);", btn_store)
+        btn_store.click()
         sleep(1)
 
         store_list = driver.find_elements(
             By.XPATH, '//div[@id="store-select-menu"]/div/div/ul/li'
         )
+        logger.info(f"Found {len(store_list)} stores")
         for store in store_list:
             driver.execute_script("arguments[0].click();", store)
-
+        
         # unselect store
-        btn_store = driver.find_element(By.XPATH, '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[1]/div[2]/div/div/div/div[2]/button')
+        btn_store = driver.find_element(
+            By.XPATH, 
+            '//*[@id="storeSelectBox"]/div/div/div/div[2]/button'
+            )
         driver.execute_script("arguments[0].click();", btn_store)
     except Exception as err:
         logger.critical(err)
@@ -514,7 +524,7 @@ def handler(event, context):
     try:
         btn_supplier = driver.find_element(
             By.XPATH, 
-            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[2]/div/div/div/div/div/div[2]/button'
+            '//*[@id="supplierSelectBox"]/div/div/div/div/div[2]/button'
         )
         driver.execute_script("arguments[0].click();", btn_supplier)
         sleep(1)
@@ -566,10 +576,10 @@ def handler(event, context):
             sleep(1)
         logger.info(f"There are {nr_suppliers} suppliers in the list")
 
-        # hover and click to get rid of the floating list
+        # click again the button to get rid of the floating list
         btn_supplier = driver.find_element(
             By.XPATH, 
-            '/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/div[2]/div/div/div/div/div/div[2]/button'
+            '//div[@id="supplier-select-menu"]/div/div/ul/li'
             )
         driver.execute_script("arguments[0].click();", btn_supplier)
     except Exception as err:
@@ -621,11 +631,11 @@ def handler(event, context):
     try:
         driver.find_element(
             By.XPATH,
-            "/html/body/div[3]/div[3]/div/form/div[1]/div/div[5]/label/span[1]/input",
+            "//div[@id='supplierSelectBox']/parent::*/parent::div/label/span/input",
         ).click()
         driver.find_element(
             By.XPATH, 
-            "/html/body/div[3]/div[3]/div/form/div[2]/button[2]"
+            "//div[@id='supplierSelectBox']/parent::*/parent::*/parent::*/parent::div/following-sibling::div/button[2]"
         ).click()
     except Exception as err:
         logger.critical(err)
@@ -662,7 +672,8 @@ def handler(event, context):
     # cancel and quit
     try:
         driver.find_element(
-            By.XPATH, "/html/body/div[3]/div[3]/div/form/div[2]/button[1]"
+            By.XPATH, 
+            "//div[@id='supplierSelectBox']/parent::*/parent::*/parent::*/parent::div/following-sibling::div/button[1]"
         ).click()
     except:
         pass
